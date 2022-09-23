@@ -48,7 +48,9 @@ class Video {
                 'time' => $arr['item_list'][0]["create_time"],
                 'title' => $arr['item_list'][0]['share_info']['share_title'],
                 'cover' => $arr['item_list'][0]['video']['origin_cover']['url_list'][0],
-                'url' => $video_url, 'music' => [
+                'url' => $video_url,
+                'redirect_url'=>$this->final_url_curl($video_url),
+                'music' => [
                     'author' => $arr['item_list'][0]['music']['author'],
                     'avatar' => $arr['item_list'][0]['music']['cover_large']['url_list'][0],
                     'url' => $arr['item_list'][0]['music']['play_url']['url_list'][0],
@@ -680,8 +682,6 @@ class Video {
         curl_setopt($con, CURLOPT_HEADER, false);
         curl_setopt($con, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($con, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($con, CURLOPT_BINARYTRANSFER, true);
-        curl_setopt($con, CURLOPT_FOLLOWLOCATION, true);
         if (!empty($headers)) {
             curl_setopt($con, CURLOPT_HTTPHEADER, $headers);
         } else {
@@ -690,6 +690,20 @@ class Video {
         curl_setopt($con, CURLOPT_TIMEOUT, 5000);
         $result = curl_exec($con);
         return $result;
+    }
+
+    private function final_url_curl($url){
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, TRUE);
+        curl_setopt($ch, CURLOPT_NOBODY, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_exec($ch);
+        $output = curl_getinfo($ch,CURLINFO_EFFECTIVE_URL);
+        curl_close($ch);
+        return $output;
     }
 
     private function post_curl($url, $post_data) {
